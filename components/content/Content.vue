@@ -1,25 +1,43 @@
 <template>
   <div>
+    <nav id="headerfix" class="header-fix">
+        <ul>
+            <li v-for="(item, index) in category" :key="index">
+                <NuxtLink :to="item.strCategory" class="font-sans item">{{ item.strCategory }}</NuxtLink> 
+            </li>       
+        </ul>              
+    </nav>
     <section class="b-home" :style="coverUrl">
-        <h1 v-if="!dishSingle" class="font-sans text-gray-100">You are hungry???</h1>
-        <h2 v-if="!dishSingle" class="font-sans text-gray-100">And you don't know what to cook.</h2>
-        <h2 v-if="!dishSingle" class="font-sans text-gray-100">Tap and cook a random dish.</h2>
+        <h1 v-if="!dishSingle" class="font-sans text-white">You are hungry???</h1>
+        <h2 v-if="!dishSingle" class="font-sans text-white">{{ text1 }}</h2>
+        <h2 v-if="!dishSingle" class="font-sans text-white">Tap and cook a random dish.</h2>
 
-        <h1 v-if="dishSingle" class="font-sans text-gray-100">{{dishSingle.strMeal}}</h1>
-        <div v-if="dishSingle" class="short-disc font-sans text-gray-100">
-            <span class="font-sans text-gray-50">Category: {{dishSingle.strCategory}}</span><br/>
-            <span class="font-sans text-gray-50">Country: {{dishSingle.strArea}}</span><br/>
-            <span class="font-sans text-gray-50" v-if="tags !== 'null'">Tags: {{tags}}</span><br/>
-            
-
+        <h1 v-if="dishSingle" class="font-sans text-white">{{dishSingle.strMeal}}</h1>
+        <div v-if="dishSingle" class="short-disc font-sans text-white">
+            <span class="font-sans text-white">Category: {{dishSingle.strCategory}}</span><br/>
+            <span class="font-sans text-white">Country: {{dishSingle.strArea}}</span><br/>
+            <span class="font-sans text-white" v-if="tags !== 'null'">Tags: {{tags}}</span><br/>
         </div>
 
+        <div class="search">
+            <input type="text" v-model="search" placeholder="Search ingredient.."/>
+        </div>
+
+        <ul class="list-ingridient">
+            <li class="rounded-full active" v-for="(item, index) in paramIng.slice(0, 7)" :key="index + 'a'" @click="clearBy(index)">{{  item }}</li>
+            <li class="rounded-full" v-for="(item) in filterIngridient.slice(0, 7)" :key="item.idIngredient" @click="saveToSelected(item.strIngredient)">{{ item.strIngredient }}</li>
+        </ul>
+        <p class="font-sans text-white" v-if="!dataFilter">Opps. Please. Try to change ingredients.</p>
+        <div class="btn-clear" @click="clear()">Clear filters</div>
         <div class="mt-10 flex space-x-2 justify-center">
-            <button @click="fetchData()" type="button" class="btn-fly inline-block px-16 py-2.5 bg-indigo-400 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-indigo-600 hover:shadow-lg focus:bg-indigo-600 focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out">Random dish</button>
+            <button @click="fetchDataFilter()" type="button" class="btn-fly inline-block px-16 py-2.5 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:shadow-lg  focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out">Random dish</button>
         </div>
     </section>
-
-    <transition name='fade'>
+    <div ref="filterbox" v-if="dataFilter && dataFilter.length">
+        <FromFilter :dataFilter="dataFilter" />
+    </div>
+    <div ref="dishSingle">
+        <transition name='fade'>
         <section v-if="dishSingle">
             <div class="mx-auto max-w-screen-xl pt-4 py-16 lg:px-8">
                 <div class="">
@@ -63,15 +81,9 @@
                 </div>
             </div>
 
-            <div v-if="dishSingle.strYoutube" class="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-                <h3 class="mb-10 text-center text-3xl font-bold sm:text-4xl">Video</h3>
-                
-                <iframe class="mx-auto" width="100%" height="400" :src="`${dishSingle.strYoutube}?autoplay=0`" title="YouTube video player" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div> 
-
         </section>
     </transition>
-
+    </div>
 
     <section class="py-10" >
         <div class="mx-auto max-w-screen-xl pt-4 lg:px-8" >
@@ -85,11 +97,10 @@
                     </li>       
                 </ul>              
             </nav>
-            <transition appear>
+            <transition name="home">
                 <div class="result">
                     <div class="mt-10" >
-                        <transition appear>
-                        
+                                   
                             <VueSlickCarousel  v-if="this.dataCategory"  v-bind="settings">
                                 <div class="a-slide" v-for="(slide) in this.dataCategory" :index="slide.idMeal" :key="slide.idMeal" @click="fetchDataById(slide.idMeal)">
                                     <div class="a-slide-img">
@@ -98,8 +109,7 @@
     
                                     <h4 class="a-slide-title text-xl font-bold">{{slide.strMeal}}</h4>
                                 </div>
-                            </VueSlickCarousel>
-                        </transition>
+                            </VueSlickCarousel>   
                         
                     </div>
                 </div>
@@ -121,11 +131,11 @@
                 </ul>
                 
             </nav>
-            <transition  appear>
+            <transition name="home">
                 <div v-if="this.dataCountry" class="result">
                     <div class="mt-10">
                         <client-only>
-                            <transition appear>
+                            
                             <VueSlickCarousel v-bind="settings">
                                 <div class="a-slide" v-for="(slide) in this.dataCountry" :index="slide.idMeal" :key="slide.idMeal" @click="fetchDataById(slide.idMeal)">
                                     <div class="a-slide-img">
@@ -135,7 +145,7 @@
                                     <h4 class="a-slide-title text-xl font-bold">{{slide.strMeal}}</h4>
                                 </div>
                             </VueSlickCarousel>
-                        </transition>
+                        
                         </client-only>
                     </div>
                 </div>
@@ -143,22 +153,37 @@
         </div>
         
     </section>
-
+    <Latest />
+    <Random />
+    <button @click="fetchDataFilter()" type="button" class="fixed-btn">Try one more</button>
   </div>
 </template>
 
 <script>
-import { urlRandomApi  } from '@/utils.js'
+import { urlRandomApi, urlIngridient, filterbying  } from '@/utils.js'
 import { mapState } from 'vuex'
 import VueSlickCarousel from 'vue-slick-carousel'
+import Latest from '../content/Latest.vue'
+import Random from '../content/Random.vue'
+import FromFilter from '../content/FromFilter.vue'
 import 'vue-slick-carousel/dist/vue-slick-carousel.css'
 import 'vue-slick-carousel/dist/vue-slick-carousel-theme.css'
 export default {
     components: {
-        VueSlickCarousel 
+        VueSlickCarousel,
+        Latest,
+        Random,
+        FromFilter 
     },
     data() {
         return {
+            text1: '',
+            errorMes: false,
+            search: '',
+            paramIng: [],
+            ingridients: [],
+            dataFilter: [],
+            ingridientsSelected: [],
             dishSingle: null,
             dataCategory: null,
             dataCountry: null,
@@ -166,10 +191,14 @@ export default {
             measure: [],
             countryFilter: '',
             catFilter: '',
+            routeName: '',
             settings: {
                 "dots": true,
                 "infinite": false,
                 "speed": 500,
+                "autoplay": true,
+                "autoplaySpeed": 2500,
+                "arrows": true,
                 "slidesToShow": 4,
                 "slidesToScroll": 4,
                 "initialSlide": 0,
@@ -208,6 +237,40 @@ export default {
             default: () => []
         }
     },
+    async mounted() {
+        const text = "And you don't know what to cook."
+        let i = 0
+        const speed = 100 
+
+        const typeWriter = () => {
+            if (i < text.length) {
+            this.text1 += text.charAt(i)
+            i++
+            setTimeout(typeWriter, speed)
+            }
+        }
+        typeWriter()
+        
+        this.fetchIngridient()
+        this.getCategoryFilter(this.category[0].strCategory)
+        // this.getCountryFilter(this.list[0].strArea)
+        this.routeName = this.$route.params.name
+        if(this.routeName) {
+            // const data = await this.$axios.$get(`${filterbying}${this.routeName}`)
+            const data = await this.$axios.$get(`https://www.themealdb.com/api/json/v2/9973533/filter.php?c=${this.routeName}`)
+
+            console.log("data", data)
+                
+            this.dataFilter = data.meals && data.meals.length ? data.meals : ''
+
+            setTimeout(()=>{
+                this.$refs.filterbox.scrollIntoView({
+                    behavior: 'smooth',
+                    alignToTop: true
+                })
+            }, 300)
+        }
+    },
     computed: {
         ...mapState(['category']),
         tags() {
@@ -239,16 +302,70 @@ export default {
             
             
             return temp
+        },
+        filterIngridient() { 
+            return this.ingridients.filter(post => {
+                return post.strIngredient.toLowerCase().includes(this.search.toLowerCase())
+            })
         }
     },
     methods: {
-        async fetchData() {
-            let params = ``
-            const data = await this.$axios.$get(urlRandomApi)
-            // www.themealdb.com/api/json/v1/1/filter.php?c=Seafood
-            this.dishSingle = data?.meals?.[0]
+        clear() {
+            this.paramIng = []
+            this.dataFilter = []
+        },
+        clearBy(index) {
+            this.paramIng.splice(index, 1);
+            this.dataFilter = []
+        },
+        saveToSelected(el) {
+            if(!this.paramIng.includes(el)){
+                this.paramIng.push(el)
+
+                // setTimeout(()=>{
+                //     this.fetchDataFilter()
+                // }, 250)
+            } else {
+            }
+        },
+        async fetchDataFilter() {
+            let params = this.paramIng.toString()
+            
+            if(this.paramIng.length) {       
+                const data = await this.$axios.$get(`${filterbying}${params}`)
+                
+                this.dataFilter = data.meals && data.meals.length ? data.meals : ''  
+
+                setTimeout(()=>{
+                  this.$refs.filterbox.scrollIntoView({
+                        behavior: 'smooth',
+                        alignToTop: true
+                    })
+                }, 300)
+
+            } else {
+                const data = await this.$axios.$get(urlRandomApi)
+                this.dishSingle = data?.meals?.[0]
+
+                if (process.client) {
+                    setTimeout(()=>{
+                    this.$refs.dishSingle.scrollIntoView({
+                            behavior: 'smooth',
+                            alignToTop: true
+                        })
+                    }, 300)
+                }
+
+            }
+            // // www.themealdb.com/api/json/v1/1/filter.php?c=Seafood
+            
+        },
+        async fetchIngridient() {
+            const data = await this.$axios.$get(urlIngridient)
+            this.ingridients = data.meals
         },
         async fetchDataById(id) {
+            this.dataFilter = []
             
             const data = await this.$axios.$get(`https://www.themealdb.com/api/json/v2/9973533/lookup.php?i=${id}`)
             
@@ -289,7 +406,6 @@ export default {
             if(this.dishSingle) {
                 
                 for (var prop in this.dishSingle) {
-                    // console.log(prop)
                     
                     if(prop.indexOf('strIngredient') !== -1 && this.dishSingle[prop])  {
                         this.ingredient.push(this.dishSingle[prop])
@@ -301,6 +417,9 @@ export default {
                 }
             }
         },
+        filterIngridient(val) {
+            // console.log('val', val)
+        },        
         catFilter(val) {
             if(val) {
                 this.dataCategory = null
@@ -331,4 +450,6 @@ export default {
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
 }
+.home-enter-active, .home-leave-active { transition: opacity .5s; }
+  .home-enter, .home-leave-active { opacity: 0; }
 </style>

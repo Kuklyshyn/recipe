@@ -21,13 +21,16 @@ export default {
   data() {
     return {
       categoryData: null,
-      countryList: null
+      countryList: null,
+      routeName: ''
     }
   },
   mounted() {
     // if(!this.category.length) {
     //   this.$store.dispatch('getCategoryLocation')
     // } 
+    this.routeName = this.$route.params.name
+    
   },
   async fetch() {
     const [data, dataCountry] = await Promise.all([this.getData(urlCategoryApi), this.getData(urlCountryApi)])

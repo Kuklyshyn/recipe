@@ -144,6 +144,7 @@ body {
     font-family: "Open Sans", sans-serif;
     font-size: 17px;
     color: #1c3745;
+    font-weight: 300;
     padding: 5px 10px;
     border-radius: 5px;
     white-space: nowrap;
@@ -2353,3 +2354,89 @@ body {
   #footer .credits a {
     color: #a2cce3;
   }
+
+  //Spinner
+
+.spinner-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px;
+  background-color: rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: all 0.15s linear;
+  z-index: -1;
+
+  &.active {
+    opacity: 1;
+    z-index: 30100;
+  }
+
+  &--small { 
+	position: absolute;
+	background-color: rgba(255,255,255,0.85);
+
+	&.active {
+		opacity: 1;
+		z-index: 2;
+	  }
+  }
+}
+.spinner {
+  animation: rotate 2s linear infinite;
+  z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -25px 0 0 -25px;
+  width: 50px;
+  height: 50px;
+
+  & .path {
+    stroke: rgb(147, 191, 236);
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+  }
+
+}
+
+.overlay-bg {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 20px;
+	background-color: rgba(0,0,0,0.5);
+	opacity: 0;
+	transition: all 0.15s linear;
+	z-index: -1;
+
+	&.active {
+	  opacity: 1;
+	  z-index: 100;
+	}
+  }
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
